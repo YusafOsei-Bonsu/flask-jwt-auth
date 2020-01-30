@@ -37,13 +37,21 @@ class User(db.Model):
         except Exception as e:
             return e
     
-    # Decodes the authentication token
     @staticmethod
+    # Decodes the authentication token
     def decode_auth_token(auth_token):
         try:
-            # the token is decoded with every API request and its signature is 
+            # The token is decoded with every API request and its signature is 
             # verified to validate the user's authenticity
             payload = jwt.decode(auth_token, app.config.get("SECRET_KEY"))
+            is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)
+            
+            # handles blacklisted tokens after the decoding and responding with appropriate message.
+            if is_blacklisted_token:
+                return "Token blacklisted. Please log in again."
+            else:
+                return payload["sub"]
+            
             # If the auth token is valid, the user id is returned
             return payload["sub"] 
         except jwt.ExpiredSignatureError:
@@ -67,3 +75,12 @@ class BlacklistToken(db.Model):
 
     def __repr__(self):
         return '<id: token: {}'.format(self.token)
+    
+    @staticmethod
+    # check whether auth token has been blacklisted
+    def check_blacklist(auth_token):
+        res = BlacklistToken.query.filter_by(token=str(auth_token)).first()
+        if res:
+            return True  
+        else:
+            return False
