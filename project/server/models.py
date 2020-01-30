@@ -17,3 +17,18 @@ class User(db.Model):
         self.password = bcrypt.generate_password_hash(password, app.config.get('BCRYPT_LOG_ROUNDS')).decode()
         self.registered_on = datetime.datetime.now()
         self.admin = admin
+    
+    # Generates the authentication token
+    def encode_auth_token(self, user_id):
+
+    try:
+        payload = {
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+            'iat': datetime.datetime.utcnow(),
+            'sub': user_id
+        }
+        
+        return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
+
+    except Exception as e:
+        return e
