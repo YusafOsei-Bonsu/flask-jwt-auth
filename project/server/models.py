@@ -5,7 +5,6 @@ from project.server import app, db, bcrypt
 # User model for storing user-based details
 class User(db.Model):
     __tablename__ = "users"
-
     # Fields of the "users" table schema
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
@@ -75,7 +74,7 @@ class BlacklistToken(db.Model):
 
     def __repr__(self):
         return '<id: token: {}'.format(self.token)
-    
+      
     @staticmethod
     # check whether auth token has been blacklisted
     def check_blacklist(auth_token):

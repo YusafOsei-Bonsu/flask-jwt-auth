@@ -1,4 +1,4 @@
-# project/server/tests/test_config.py
+# project/tests/test_config.py
 import unittest
 
 from flask import current_app
@@ -28,7 +28,6 @@ class TestTestingConfig(TestCase):
         self.assertTrue(app.config["DEBUG"])
         self.assertTrue(app.config["SQLALCHEMY_DATABASE_URI"] == "postgresql://postgres:Rasengan1@localhost:5432/flask_jwt_auth_test")
 
-
 class TestProductionConfig(TestCase):
     def create_app(self):
         app.config.from_object('project.server.config.ProductionConfig')
@@ -36,7 +35,6 @@ class TestProductionConfig(TestCase):
 
     def test_app_is_production(self):
         self.assertTrue(app.config['DEBUG'] is False)
-
 
 if __name__ == '__main__':
     unittest.main()

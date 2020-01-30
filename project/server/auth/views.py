@@ -17,6 +17,7 @@ class RegisterAPI(MethodView):
         if not user:
             try:
                 user = User(email=post_data.get('email'), password=post_data.get('password'))
+
                 # insert the user
                 db.session.add(user)
                 db.session.commit()
@@ -43,6 +44,7 @@ class RegisterAPI(MethodView):
 
 # User login resource
 class LoginAPI(MethodView):
+
     def post(self):
         # get the post data
         post_data = request.get_json()
@@ -77,6 +79,7 @@ class LoginAPI(MethodView):
             return make_response(jsonify(responseObject)), 500
 
 class UserAPI(MethodView):
+  
     def get(self):
         # get the auth token
         auth_header = request.headers.get('Authorization')
@@ -118,6 +121,7 @@ class UserAPI(MethodView):
             return make_response(jsonify(responseObject)), 401
 
 class LogoutAPI(MethodView):
+
     def post(self):
         # get auth token
         auth_header = request.headers.get('Authorization')
