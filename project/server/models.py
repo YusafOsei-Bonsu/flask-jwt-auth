@@ -36,3 +36,19 @@ class User(db.Model):
 
         except Exception as e:
             return e
+    
+    # Decodes the authentication token
+    @staticmethod
+    def decode_auth_token(auth_token):
+        try:
+            # the token is decoded with every API request and its signature is 
+            # verified to validate the user's authenticity
+            payload = jwt.decode(auth_token, app.config.get("SECRET_KEY"))
+            # If the auth token is valid, the user id is returned
+            return payload["sub"] 
+        except jwt.ExpiredSignatureError:
+             # Token is used after it has expired
+            return "Signature expired. Please log in again."
+        except jwt.InvalidTokenError:
+            # The token is incorrect/malformed
+            return "Invalid token. Please log in again."
