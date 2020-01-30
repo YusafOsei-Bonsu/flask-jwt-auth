@@ -76,13 +76,19 @@ class LoginAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 500
 
-# User resource
 class UserAPI(MethodView):
     def get(self):
         # get the auth token
         auth_header = request.headers.get('Authorization')
         if auth_header:
-            auth_token = auth_header.split(" ")[1]
+            try:
+                auth_token = auth_header.split(" ")[1]
+            except IndexError:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Bearer token malformed.'
+                }
+                return make_response(jsonify(responseObject)), 401
         else:
             auth_token = ''
         if auth_token:
