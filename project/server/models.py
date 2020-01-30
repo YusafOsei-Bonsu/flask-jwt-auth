@@ -1,16 +1,11 @@
-# project/server/models.py
-
-
-import jwt
 import datetime
-
+import jwt
 from project.server import app, db, bcrypt
 
-
+# User model for storing user-based details
 class User(db.Model):
-    """ User Model for storing user related details """
     __tablename__ = "users"
-
+    # Fields of the "users" table schema
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
@@ -19,55 +14,54 @@ class User(db.Model):
 
     def __init__(self, email, password, admin=False):
         self.email = email
-        self.password = bcrypt.generate_password_hash(
-            password, app.config.get('BCRYPT_LOG_ROUNDS')
-        ).decode()
+        self.password = bcrypt.generate_password_hash(password, app.config.get('BCRYPT_LOG_ROUNDS')).decode()
         self.registered_on = datetime.datetime.now()
         self.admin = admin
-
+    
+    # Generates the authentication token
     def encode_auth_token(self, user_id):
-        """
-        Generates the Auth Token
-        :return: string
-        """
+
         try:
             payload = {
+                # Token's expiry date
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+                # The time when the token was generated
                 'iat': datetime.datetime.utcnow(),
+                # The owner (user) of the token
                 'sub': user_id
             }
-            return jwt.encode(
-                payload,
-                app.config.get('SECRET_KEY'),
-                algorithm='HS256'
-            )
+
+            return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
+
         except Exception as e:
             return e
-
+    
     @staticmethod
+    # Decodes the authentication token
     def decode_auth_token(auth_token):
-        """
-        Validates the auth token
-        :param auth_token:
-        :return: integer|string
-        """
         try:
-            payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
+            # The token is decoded with every API request and its signature is 
+            # verified to validate the user's authenticity
+            payload = jwt.decode(auth_token, app.config.get("SECRET_KEY"))
             is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)
+            
+            # handles blacklisted tokens after the decoding and responding with appropriate message.
             if is_blacklisted_token:
-                return 'Token blacklisted. Please log in again.'
+                return "Token blacklisted. Please log in again."
             else:
-                return payload['sub']
+                return payload["sub"]
+            
+            # If the auth token is valid, the user id is returned
+            return payload["sub"] 
         except jwt.ExpiredSignatureError:
-            return 'Signature expired. Please log in again.'
+             # Token is used after it has expired
+            return "Signature expired. Please log in again."
         except jwt.InvalidTokenError:
-            return 'Invalid token. Please log in again.'
+            # The token is incorrect/malformed
+            return "Invalid token. Please log in again."
 
-
+# Token model for storing JWT tokens
 class BlacklistToken(db.Model):
-    """
-    Token Model for storing JWT tokens
-    """
     __tablename__ = 'blacklist_tokens'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -80,12 +74,12 @@ class BlacklistToken(db.Model):
 
     def __repr__(self):
         return '<id: token: {}'.format(self.token)
-
+      
     @staticmethod
+    # check whether auth token has been blacklisted
     def check_blacklist(auth_token):
-        # check whether auth token has been blacklisted
         res = BlacklistToken.query.filter_by(token=str(auth_token)).first()
         if res:
-            return True
+            return True  
         else:
             return False

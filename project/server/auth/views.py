@@ -1,6 +1,3 @@
-# project/server/auth/views.py
-
-
 from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
 
@@ -9,11 +6,8 @@ from project.server.models import User, BlacklistToken
 
 auth_blueprint = Blueprint('auth', __name__)
 
-
+# A new user is registered and a new auth token for further requests is generated, which we send back to the client.
 class RegisterAPI(MethodView):
-    """
-    User Registration Resource
-    """
 
     def post(self):
         # get the post data
@@ -22,10 +16,8 @@ class RegisterAPI(MethodView):
         user = User.query.filter_by(email=post_data.get('email')).first()
         if not user:
             try:
-                user = User(
-                    email=post_data.get('email'),
-                    password=post_data.get('password')
-                )
+                user = User(email=post_data.get('email'), password=post_data.get('password'))
+
                 # insert the user
                 db.session.add(user)
                 db.session.commit()
@@ -50,11 +42,9 @@ class RegisterAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 202
 
-
+# User login resource
 class LoginAPI(MethodView):
-    """
-    User Login Resource
-    """
+
     def post(self):
         # get the post data
         post_data = request.get_json()
@@ -88,11 +78,8 @@ class LoginAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 500
 
-
 class UserAPI(MethodView):
-    """
-    User Resource
-    """
+  
     def get(self):
         # get the auth token
         auth_header = request.headers.get('Authorization')
@@ -133,11 +120,8 @@ class UserAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 401
 
-
 class LogoutAPI(MethodView):
-    """
-    Logout Resource
-    """
+
     def post(self):
         # get auth token
         auth_header = request.headers.get('Authorization')
@@ -185,23 +169,7 @@ user_view = UserAPI.as_view('user_api')
 logout_view = LogoutAPI.as_view('logout_api')
 
 # add Rules for API Endpoints
-auth_blueprint.add_url_rule(
-    '/auth/register',
-    view_func=registration_view,
-    methods=['POST']
-)
-auth_blueprint.add_url_rule(
-    '/auth/login',
-    view_func=login_view,
-    methods=['POST']
-)
-auth_blueprint.add_url_rule(
-    '/auth/status',
-    view_func=user_view,
-    methods=['GET']
-)
-auth_blueprint.add_url_rule(
-    '/auth/logout',
-    view_func=logout_view,
-    methods=['POST']
-)
+auth_blueprint.add_url_rule('/auth/register', view_func = registration_view, methods = ['POST'])
+auth_blueprint.add_url_rule('/auth/login', view_func = login_view, methods = ['POST'])
+auth_blueprint.add_url_rule('/auth/status', view_func = user_view, methods = ['GET'])
+auth_blueprint.add_url_rule('/auth/logout', view_func = logout_view, methods = ['POST'])
