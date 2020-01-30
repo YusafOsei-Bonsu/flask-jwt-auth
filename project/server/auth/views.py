@@ -41,55 +41,6 @@ class RegisterAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 202
 
-    # Test registration in a scenario where the user already exists
-    def test_registered_with_already_registered_user(self):
-        user = User(email = 'joe@gmail.com', password = 'test')
-        db.session.add(user)
-        db.session.commit()
-
-        with self.client:
-            response = self.client.post(
-                '/auth/register',
-                data = json.dumps(dict(email = 'joe@gmail.com', password = '123456')),
-                content_type = 'application/json'
-            )
-            data = json.loads(response.data.decode())
-            self.assertTrue(data['status'] == 'fail')
-            self.assertTrue(data['message'] == 'User already exists. Please Log in.')
-            self.assertTrue(response.content_type == 'application/json')
-            self.assertEqual(response.status_code, 202)
-
-    # Tests the login of registered users
-    def test_registered_user_login(self):
-        with self.client:
-            # user registration
-            resp_register = self.client.post(
-                '/auth/register',
-                data = json.dumps(dict(email = 'joe@gmail.com', password = '123456')),
-                content_type = 'application/json'
-            )
-            
-            data_register = json.loads(resp_register.data.decode())
-            self.assertTrue(data_register['status'] == 'success')
-            self.assertTrue(data_register['message'] == 'Successfully registered.')
-            self.assertTrue(data_register['auth_token'])
-            self.assertTrue(resp_register.content_type == 'application/json')
-            self.assertEqual(resp_register.status_code, 201)
-            
-            # registered user login
-            response = self.client.post(
-                '/auth/login',
-                data = json.dumps(dict(email = 'joe@gmail.com', password = '123456')),
-                content_type='application/json'
-            )
-            
-            data = json.loads(response.data.decode())
-            self.assertTrue(data['status'] == 'success')
-            self.assertTrue(data['message'] == 'Successfully logged in.')
-            self.assertTrue(data['auth_token'])
-            self.assertTrue(response.content_type == 'application/json')
-            self.assertEqual(response.status_code, 200)
-
 # User login resource
 class LoginAPI(MethodView):
     def post(self):
@@ -97,15 +48,26 @@ class LoginAPI(MethodView):
         post_data = request.get_json()
         try:
             # fetch the user data
-            user = User.query.filter_by(email = post_data.get('email')).first()
-            auth_token = user.encode_auth_token(user.id)
-            if auth_token:
+            user = User.query.filter_by(
+                email=post_data.get('email')
+            ).first()
+            if user and bcrypt.check_password_hash(
+                user.password, post_data.get('password')
+            ):
+                auth_token = user.encode_auth_token(user.id)
+                if auth_token:
+                    responseObject = {
+                        'status': 'success',
+                        'message': 'Successfully logged in.',
+                        'auth_token': auth_token.decode()
+                    }
+                    return make_response(jsonify(responseObject)), 200
+            else:
                 responseObject = {
-                    'status': 'success',
-                    'message': 'Successfully logged in.',
-                    'auth_token': auth_token.decode()
+                    'status': 'fail',
+                    'message': 'User does not exist.'
                 }
-                return make_response(jsonify(responseObject)), 200
+                return make_response(jsonify(responseObject)), 404
         except Exception as e:
             print(e)
             responseObject = {
