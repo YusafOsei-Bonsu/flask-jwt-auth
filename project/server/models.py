@@ -22,17 +22,17 @@ class User(db.Model):
     # Generates the authentication token
     def encode_auth_token(self, user_id):
 
-    try:
-        payload = {
-            # Token's expiry date
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
-            # The time when the token was generated
-            'iat': datetime.datetime.utcnow(),
-            # The owner (user) of the token
-            'sub': user_id
-        }
+        try:
+            payload = {
+                # Token's expiry date
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+                # The time when the token was generated
+                'iat': datetime.datetime.utcnow(),
+                # The owner (user) of the token
+                'sub': user_id
+            }
 
-        return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
+            return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
 
-    except Exception as e:
-        return e
+        except Exception as e:
+            return e
