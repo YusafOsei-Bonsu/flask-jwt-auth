@@ -1,3 +1,8 @@
+# What I've learnt
+
+## 
+Entered the following command: `psql -U postgres -h localhost -W` in the terminal to login into postgres as "postgres".
+
 # Flask JWT Auth
 
 [![Build Status](https://travis-ci.org/realpython/flask-jwt-auth.svg?branch=master)](https://travis-ci.org/realpython/flask-jwt-auth)
