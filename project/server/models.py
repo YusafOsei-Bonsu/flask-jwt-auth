@@ -1,5 +1,5 @@
 import datetime
-from project.server import app, db, bcrypt, models
+from project.server import app, db, bcrypt
 
 # User model for storing user-based details
 class User(db.Model):
