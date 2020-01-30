@@ -24,8 +24,11 @@ class User(db.Model):
 
     try:
         payload = {
+            # Token's expiry date
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+            # The time when the token was generated
             'iat': datetime.datetime.utcnow(),
+            # The owner (user) of the token
             'sub': user_id
         }
 
