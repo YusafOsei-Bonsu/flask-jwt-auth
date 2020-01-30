@@ -1,4 +1,5 @@
 import datetime
+import jwt
 from project.server import app, db, bcrypt
 
 # User model for storing user-based details
@@ -27,7 +28,7 @@ class User(db.Model):
             'iat': datetime.datetime.utcnow(),
             'sub': user_id
         }
-        
+
         return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
 
     except Exception as e:
